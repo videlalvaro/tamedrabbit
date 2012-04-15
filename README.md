@@ -5,8 +5,9 @@ This repo hosts the file `release.branch.diff` that can be applied to the
 to add a make target that allows you to create a rabbitmq release that includes the Erlang
 runtime system (erts).
 
-Inside the downloads folder you you can find the file
+Inside the downloads folder you can find the standalone release file
 [rabbitmq-server-osx-2.8.1u.tar.gz](https://raw.github.com/videlalvaro/rabbitmq-release/master/downloads/rabbitmq-server-osx-2.8.1u.tar.gz).
+Feel free to untar it and test it on your Mac.
 
 The release has been built with `Erlang R15B01 (erts-5.9.1)` on a Mac with **OSX Lion**.
 
@@ -48,3 +49,9 @@ Your new release file will be inside:
 
 This release is unofficial and not supported by the RabbitMQ. If something doesn't work blame me
 and file an issue on this repo.
+
+# LICENSE #
+
+This work is licensed under the Mozilla Public License as stated here: [http://www.rabbitmq.com/mpl.html](http://www.rabbitmq.com/mpl.html).
+
+The Erlang ERTS is distrubted according to the Erlang Public License: [http://www.erlang.org/EPLICENSE](http://www.erlang.org/EPLICENSE)
