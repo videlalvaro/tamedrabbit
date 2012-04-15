@@ -5,7 +5,10 @@ This repo hosts the file `release.branch.diff` that can be applied to the
 to add a make target that allows you to create a rabbitmq release that includes the Erlang
 runtime system (erts).
 
-Inside the downloads folder you you can find the file `rabbitmq-server-osx-2.8.1u.tar.gz`
+Inside the downloads folder you you can find the file
+[rabbitmq-server-osx-2.8.1u.tar.gz](https://raw.github.com/videlalvaro/rabbitmq-release/master/downloads/rabbitmq-server-osx-2.8.1u.tar.gz).
+
+The release has been built with `Erlang R15B01 (erts-5.9.1)` on a Mac with **OSX Lion**.
 
 Read the instructions located in the realted README file to see how to run the server.
 
