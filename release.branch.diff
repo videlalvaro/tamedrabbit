@@ -1,0 +1,545 @@
+diff -r 60755ae0eee9 -r 593d08de6098 Makefile
+--- a/Makefile	Thu Apr 12 18:38:34 2012 +0100
++++ b/Makefile	Sun Apr 15 22:14:12 2012 +0200
+@@ -62,6 +62,12 @@
+ TARBALL_NAME=rabbitmq-server-$(VERSION)
+ TARGET_SRC_DIR=dist/$(TARBALL_NAME)
+ 
++# used to generate a relase
++RLS_BUILD_DIR=pre-release/build
++RLS_DIR=$(RLS_BUILD_DIR)/$(TARBALL_NAME)
++ERTS_VSN=$(shell erl -noshell -eval 'io:format("~s", [erlang:system_info(version)]), halt().')
++ERTS_ROOT_DIR=$(shell erl -noshell -eval 'io:format("~s", [code:root_dir()]), halt().')
++
+ SIBLING_CODEGEN_DIR=../rabbitmq-codegen/
+ AMQP_CODEGEN_DIR=$(shell [ -d $(SIBLING_CODEGEN_DIR) ] && echo $(SIBLING_CODEGEN_DIR) || echo codegen)
+ AMQP_SPEC_JSON_FILES_0_9_1=$(AMQP_CODEGEN_DIR)/amqp-rabbitmq-0.9.1.json
+@@ -243,6 +249,46 @@
+ 
+ ########################################################################
+ 
++# Requires Variable PLUGINS_SRC_DIR and VERSION
++# This target should depend on the plugins target but fails. plugins target fails
++rlsdist:
++# prepare build directory
++	rm -rf $(RLS_BUILD_DIR)
++	mkdir -p $(RLS_DIR)
++# copy server files
++	cp -r ebin include plugins $(RLS_DIR)
++# replace app version
++	sed 's/%%VSN%%/$(VERSION)/' ./ebin/rabbit.app > $(RLS_DIR)/ebin/rabbit.app
++# prepare sbin folder
++	mkdir -p $(RLS_DIR)/sbin
++	cp pre-release/templates/rabbit* $(RLS_DIR)/sbin/
++	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/rabbitmq-env > $(RLS_DIR)/sbin/rabbitmq-env
++	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/rabbitmq-defaults > $(RLS_DIR)/sbin/rabbitmq-defaults
++# copy enabled plugins file
++	mkdir -p $(RLS_DIR)/etc/rabbitmq
++	cp pre-release/templates/enabled_plugins $(RLS_DIR)/etc/rabbitmq/enabled_plugins
++	mkdir -p $(RLS_DIR)/plugins/expand
++# generate release files
++	pre-release/scripts/make_rel $(RLS_DIR)
++	rm -r $(RLS_DIR)/*
++	tar -C $(RLS_DIR) -xzvf pre-release/rabbit.tar.gz
++# copy post_install script
++	mkdir $(RLS_DIR)/bin
++	cp pre-release/templates/post_install.sh $(RLS_DIR)/bin/
++	sed 's/%%ERTS_VSN%%/$(ERTS_VSN)/' pre-release/templates/post_install.sh > $(RLS_DIR)/bin/post_install.sh
++# add minimal boot file
++	cp $(ERTS_ROOT_DIR)/bin/start_clean.boot $(RLS_DIR)/releases/$(VERSION)
++# add README file
++	cp pre-release/templates/README $(RLS_DIR)
++	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/README > $(RLS_DIR)/README
++# add LICENSE files
++	cp LICENSE LICENSE-MPL-RabbitMQ $(RLS_DIR)
++# generate final tar
++	(cd $(RLS_BUILD_DIR); tar -zchf $(TARBALL_NAME).tar.gz $(TARBALL_NAME))
++# clean up
++	rm pre-release/rabbit.tar.gz
++	rm -rf $(RLS_DIR)
++
+ srcdist: distclean
+ 	mkdir -p $(TARGET_SRC_DIR)/codegen
+ 	cp -r ebin src include LICENSE LICENSE-MPL-RabbitMQ INSTALL README $(TARGET_SRC_DIR)
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/scripts/make_rel
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/scripts/make_rel	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,25 @@
++#!/bin/sh
++
++SYS_PREFIX=$1
++RABBITMQ_HOME="${SYS_PREFIX}"
++## Set default values
++
++CONFIG_FILE=${SYS_PREFIX}/etc/rabbitmq/rabbitmq
++LOG_BASE=${SYS_PREFIX}/var/log/rabbitmq
++MNESIA_BASE=${SYS_PREFIX}/var/lib/rabbitmq/mnesia
++ENABLED_PLUGINS_FILE=${SYS_PREFIX}/etc/rabbitmq/enabled_plugins
++PLUGINS_DIR="${RABBITMQ_HOME}/plugins"
++CONF_ENV_FILE=${SYS_PREFIX}/etc/rabbitmq/rabbitmq-env.conf
++PLUGINS_EXPAND_DIR=${PLUGINS_DIR}/expand
++
++[ "x" = "x$RABBITMQ_PLUGINS_EXPAND_DIR" ] && RABBITMQ_PLUGINS_EXPAND_DIR=${PLUGINS_EXPAND_DIR}
++[ "x" = "x$RABBITMQ_PLUGINS_DIR" ] && RABBITMQ_PLUGINS_DIR=${PLUGINS_DIR}
++[ "x" = "x$RABBITMQ_ENABLED_PLUGINS_FILE" ] && RABBITMQ_ENABLED_PLUGINS_FILE=${ENABLED_PLUGINS_FILE}
++
++RABBITMQ_EBIN_ROOT="${RABBITMQ_HOME}/ebin"
++erl \
++    -pa "$RABBITMQ_EBIN_ROOT" \
++    -noinput \
++    -hidden \
++    -s rabbit_release \
++    -extra "$RABBITMQ_ENABLED_PLUGINS_FILE" "$RABBITMQ_PLUGINS_DIR" "${RABBITMQ_PLUGINS_EXPAND_DIR}" "${RABBITMQ_HOME}"
+\ No newline at end of file
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/README
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/README	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,27 @@
++# NOTE: This is an unofficial release not supported by the RabbitMQ team #
++
++Running RabbitMQ
++
++Before running the server do:
++
++    $ ./bin/post_install.sh
++
++That script will set the right path for the Erlang runtime that is distributed with this package.
++
++Then to run the server do:
++
++     $ ./lib/rabbit-%%VSN%%/sbin/rabbitmq-server
++
++If you want to run the server in the background the do:
++
++     $ ./lib/rabbit-%%VSN%%/sbin/rabbitmq-server -detached
++
++To stop the server run:
++
++     $ ./lib/rabbit-%%VSN%%/sbin/rabbitmqctl stop
++
++This release comes with the Management Plugin already installed. To use it open http://localhost:55672
++
++For documentation see:
++
++http://www.rabbitmq.com/documentation.html
+\ No newline at end of file
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/enabled_plugins
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/enabled_plugins	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,1 @@
++[rabbitmq_management].
+\ No newline at end of file
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/post_install.sh
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/post_install.sh	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,6 @@
++#!/bin/sh
++ROOT="`pwd`"
++DIR=./erts-%%ERTS_VSN%%/bin
++sed s:%FINAL_ROOTDIR%:\""${ROOT}"\": $DIR/erl.src > $DIR/erl.tmp
++sed s:\$BINDIR:\"\$BINDIR\": $DIR/erl.tmp > $DIR/erl
++rm $DIR/erl.tmp
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/rabbitmq-defaults
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/rabbitmq-defaults	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,34 @@
++#!/bin/sh
++##  The contents of this file are subject to the Mozilla Public License
++##  Version 1.1 (the "License"); you may not use this file except in
++##  compliance with the License. You may obtain a copy of the License
++##  at http://www.mozilla.org/MPL/
++##
++##  Software distributed under the License is distributed on an "AS IS"
++##  basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
++##  the License for the specific language governing rights and
++##  limitations under the License.
++##
++##  The Original Code is RabbitMQ.
++##
++##  The Initial Developer of the Original Code is VMware, Inc.
++##  Copyright (c) 2012 VMware, Inc.  All rights reserved.
++##
++
++### next line potentially updated in package install steps
++SYS_PREFIX="${RABBITMQ_HOME}/../.."
++ERTS_DIR="${SYS_PREFIX}/%%ERTS_VSN%%/bin"
++
++## Set default values
++
++CONFIG_FILE="${SYS_PREFIX}"/etc/rabbitmq/rabbitmq
++LOG_BASE="${SYS_PREFIX}"/var/log/rabbitmq
++MNESIA_BASE="${SYS_PREFIX}"/var/lib/rabbitmq/mnesia
++ENABLED_PLUGINS_FILE="${SYS_PREFIX}"/etc/rabbitmq/enabled_plugins
++
++PLUGINS_DIR="${RABBITMQ_HOME}/plugins"
++
++CONF_ENV_FILE="${SYS_PREFIX}"/etc/rabbitmq/rabbitmq-env.conf
++
++BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start"
++GENERIC_BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start_clean"
+\ No newline at end of file
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/rabbitmq-env
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/rabbitmq-env	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,51 @@
++#!/bin/sh
++##  The contents of this file are subject to the Mozilla Public License
++##  Version 1.1 (the "License"); you may not use this file except in
++##  compliance with the License. You may obtain a copy of the License
++##  at http://www.mozilla.org/MPL/
++##
++##  Software distributed under the License is distributed on an "AS IS"
++##  basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
++##  the License for the specific language governing rights and
++##  limitations under the License.
++##
++##  The Original Code is RabbitMQ.
++##
++##  The Initial Developer of the Original Code is VMware, Inc.
++##  Copyright (c) 2007-2012 VMware, Inc.  All rights reserved.
++##
++
++# Determine where this script is really located (if this script is
++# invoked from another script, this is the location of the caller)
++SCRIPT_PATH="$0"
++while [ -h "$SCRIPT_PATH" ] ; do
++    FULL_PATH=`readlink -f $SCRIPT_PATH 2>/dev/null`
++    if [ "$?" != "0" ]; then
++      REL_PATH=`readlink $SCRIPT_PATH`
++      if expr "$REL_PATH" : '/.*' > /dev/null; then
++        SCRIPT_PATH="$REL_PATH"
++      else
++        SCRIPT_PATH="`dirname "$SCRIPT_PATH"`/$REL_PATH"
++      fi
++    else
++      SCRIPT_PATH=$FULL_PATH
++    fi
++done
++
++SCRIPT_DIR=`dirname $SCRIPT_PATH`
++
++RELEASE_VERSION="%%VSN%%"
++
++RABBITMQ_HOME="${SCRIPT_DIR}/.."
++[ "x" = "x$HOSTNAME" ] && HOSTNAME=`env hostname`
++NODENAME=rabbit@${HOSTNAME%%.*}
++
++## Set defaults
++. ${SCRIPT_DIR}/rabbitmq-defaults
++
++## Common defaults
++SERVER_ERL_ARGS="+K true +A30 +P 1048576 \
++  -kernel inet_default_connect_options [{nodelay,true}]"
++
++## Get configuration variables from the configure environment file
++[ -f ${CONF_ENV_FILE} ] && . ${CONF_ENV_FILE}
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/rabbitmq-server
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/rabbitmq-server	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,107 @@
++#!/bin/sh
++##  The contents of this file are subject to the Mozilla Public License
++##  Version 1.1 (the "License"); you may not use this file except in
++##  compliance with the License. You may obtain a copy of the License
++##  at http://www.mozilla.org/MPL/
++##
++##  Software distributed under the License is distributed on an "AS IS"
++##  basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
++##  the License for the specific language governing rights and
++##  limitations under the License.
++##
++##  The Original Code is RabbitMQ.
++##
++##  The Initial Developer of the Original Code is VMware, Inc.
++##  Copyright (c) 2007-2012 VMware, Inc.  All rights reserved.
++##
++
++# Get default settings with user overrides for (RABBITMQ_)<var_name>
++# Non-empty defaults should be set in rabbitmq-env
++. `dirname $0`/rabbitmq-env
++
++##--- Set environment vars RABBITMQ_<var_name> to defaults if not set
++
++DEFAULT_NODE_IP_ADDRESS=auto
++DEFAULT_NODE_PORT=5672
++[ "x" = "x$RABBITMQ_NODE_IP_ADDRESS" ] && RABBITMQ_NODE_IP_ADDRESS=${NODE_IP_ADDRESS}
++[ "x" = "x$RABBITMQ_NODE_PORT" ] && RABBITMQ_NODE_PORT=${NODE_PORT}
++
++[ "x" = "x$RABBITMQ_NODE_IP_ADDRESS" ] && [ "x" != "x$RABBITMQ_NODE_PORT" ] && RABBITMQ_NODE_IP_ADDRESS=${DEFAULT_NODE_IP_ADDRESS}
++[ "x" != "x$RABBITMQ_NODE_IP_ADDRESS" ] && [ "x" = "x$RABBITMQ_NODE_PORT" ] && RABBITMQ_NODE_PORT=${DEFAULT_NODE_PORT}
++
++[ "x" = "x$RABBITMQ_NODENAME" ] && RABBITMQ_NODENAME=${NODENAME}
++[ "x" = "x$RABBITMQ_SERVER_ERL_ARGS" ] && RABBITMQ_SERVER_ERL_ARGS=${SERVER_ERL_ARGS}
++[ "x" = "x$RABBITMQ_CONFIG_FILE" ] && RABBITMQ_CONFIG_FILE=${CONFIG_FILE}
++[ "x" = "x$RABBITMQ_LOG_BASE" ] && RABBITMQ_LOG_BASE=${LOG_BASE}
++[ "x" = "x$RABBITMQ_MNESIA_BASE" ] && RABBITMQ_MNESIA_BASE=${MNESIA_BASE}
++[ "x" = "x$RABBITMQ_SERVER_START_ARGS" ] && RABBITMQ_SERVER_START_ARGS=${SERVER_START_ARGS}
++
++[ "x" = "x$RABBITMQ_MNESIA_DIR" ] && RABBITMQ_MNESIA_DIR=${MNESIA_DIR}
++[ "x" = "x$RABBITMQ_MNESIA_DIR" ] && RABBITMQ_MNESIA_DIR=${RABBITMQ_MNESIA_BASE}/${RABBITMQ_NODENAME}
++
++[ "x" = "x$RABBITMQ_PID_FILE" ] && RABBITMQ_PID_FILE=${PID_FILE}
++[ "x" = "x$RABBITMQ_PID_FILE" ] && RABBITMQ_PID_FILE=${RABBITMQ_MNESIA_DIR}.pid
++
++[ "x" = "x$RABBITMQ_PLUGINS_EXPAND_DIR" ] && RABBITMQ_PLUGINS_EXPAND_DIR=${PLUGINS_EXPAND_DIR}
++[ "x" = "x$RABBITMQ_PLUGINS_EXPAND_DIR" ] && RABBITMQ_PLUGINS_EXPAND_DIR=${RABBITMQ_MNESIA_BASE}/${RABBITMQ_NODENAME}-plugins-expand
++
++[ "x" = "x$RABBITMQ_ENABLED_PLUGINS_FILE" ] && RABBITMQ_ENABLED_PLUGINS_FILE=${ENABLED_PLUGINS_FILE}
++
++[ "x" = "x$RABBITMQ_PLUGINS_DIR" ] && RABBITMQ_PLUGINS_DIR=${PLUGINS_DIR}
++
++## Log rotation
++[ "x" = "x$RABBITMQ_LOGS" ] && RABBITMQ_LOGS=${LOGS}
++[ "x" = "x$RABBITMQ_LOGS" ] && RABBITMQ_LOGS="${RABBITMQ_LOG_BASE}/${RABBITMQ_NODENAME}.log"
++[ "x" = "x$RABBITMQ_SASL_LOGS" ] && RABBITMQ_SASL_LOGS=${SASL_LOGS}
++[ "x" = "x$RABBITMQ_SASL_LOGS" ] && RABBITMQ_SASL_LOGS="${RABBITMQ_LOG_BASE}/${RABBITMQ_NODENAME}-sasl.log"
++
++##--- End of overridden <var_name> variables
++
++RABBITMQ_START_RABBIT=
++[ "x" = "x$RABBITMQ_ALLOW_INPUT" ] && RABBITMQ_START_RABBIT='-noinput'
++
++case "$(uname -s)" in
++  CYGWIN*) # we make no attempt to record the cygwin pid; rabbitmqctl wait
++           # will not be able to make sense of it anyway
++           ;;
++  *)       mkdir -p $(dirname ${RABBITMQ_PID_FILE});
++           echo $$ > ${RABBITMQ_PID_FILE}
++           ;;
++esac
++
++RABBITMQ_EBIN_ROOT="${RABBITMQ_HOME}/ebin"
++[ "x" = "x$RABBITMQ_BOOT_FILE" ] && RABBITMQ_BOOT_FILE=${BOOT_FILE}
++RABBITMQ_EBIN_PATH=""
++
++RABBITMQ_CONFIG_ARG=
++[ -f "${RABBITMQ_CONFIG_FILE}.config" ] && RABBITMQ_CONFIG_ARG="-config ${RABBITMQ_CONFIG_FILE}"
++
++RABBITMQ_LISTEN_ARG=
++[ "x" != "x$RABBITMQ_NODE_PORT" ] && [ "x" != "x$RABBITMQ_NODE_IP_ADDRESS" ] && RABBITMQ_LISTEN_ARG="-rabbit tcp_listeners [{\""${RABBITMQ_NODE_IP_ADDRESS}"\","${RABBITMQ_NODE_PORT}"}]"
++
++# we need to turn off path expansion because some of the vars, notably
++# RABBITMQ_SERVER_ERL_ARGS, contain terms that look like globs and
++# there is no other way of preventing their expansion.
++
++set -f
++
++exec "${ERTS_DIR}"/erl \
++    ${RABBITMQ_EBIN_PATH} \
++    ${RABBITMQ_START_RABBIT} \
++    -sname ${RABBITMQ_NODENAME} \
++    -boot ${RABBITMQ_BOOT_FILE} \
++    ${RABBITMQ_CONFIG_ARG} \
++    +W w \
++    ${RABBITMQ_SERVER_ERL_ARGS} \
++    ${RABBITMQ_LISTEN_ARG} \
++    -sasl errlog_type error \
++    -sasl sasl_error_logger false \
++    -rabbit error_logger '{file,"'${RABBITMQ_LOGS}'"}' \
++    -rabbit sasl_error_logger '{file,"'${RABBITMQ_SASL_LOGS}'"}' \
++    -os_mon start_cpu_sup false \
++    -os_mon start_disksup false \
++    -os_mon start_memsup false \
++    -mnesia dir "\"${RABBITMQ_MNESIA_DIR}\"" \
++    ${RABBITMQ_SERVER_START_ARGS} \
++    "$@"
++
+diff -r 60755ae0eee9 -r 593d08de6098 pre-release/templates/rabbitmqctl
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/pre-release/templates/rabbitmqctl	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,39 @@
++#!/bin/sh
++##  The contents of this file are subject to the Mozilla Public License
++##  Version 1.1 (the "License"); you may not use this file except in
++##  compliance with the License. You may obtain a copy of the License
++##  at http://www.mozilla.org/MPL/
++##
++##  Software distributed under the License is distributed on an "AS IS"
++##  basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See
++##  the License for the specific language governing rights and
++##  limitations under the License.
++##
++##  The Original Code is RabbitMQ.
++##
++##  The Initial Developer of the Original Code is VMware, Inc.
++##  Copyright (c) 2007-2012 VMware, Inc.  All rights reserved.
++##
++
++# Get default settings with user overrides for (RABBITMQ_)<var_name>
++# Non-empty defaults should be set in rabbitmq-env
++. `dirname $0`/rabbitmq-env
++
++##--- Set environment vars RABBITMQ_<var_name> to defaults if not set
++
++[ "x" = "x$RABBITMQ_NODENAME" ] && RABBITMQ_NODENAME=${NODENAME}
++[ "x" = "x$RABBITMQ_CTL_ERL_ARGS" ] && RABBITMQ_CTL_ERL_ARGS=${CTL_ERL_ARGS}
++[ "x" = "x$RABBITMQ_GENERIC_BOOT_FILE" ] && RABBITMQ_GENERIC_BOOT_FILE=${GENERIC_BOOT_FILE}
++
++##--- End of overridden <var_name> variables
++
++exec "${ERTS_DIR}"/erl \
++    -pa "${RABBITMQ_HOME}/ebin" \
++    -noinput \
++    -hidden \
++    -boot "${RABBITMQ_GENERIC_BOOT_FILE}" \
++    ${RABBITMQ_CTL_ERL_ARGS} \
++    -sname rabbitmqctl$$ \
++    -s rabbit_control \
++    -nodename $RABBITMQ_NODENAME \
++    -extra "$@"
+diff -r 60755ae0eee9 -r 593d08de6098 src/rabbit_release.erl
+--- /dev/null	Thu Jan 01 00:00:00 1970 +0000
++++ b/src/rabbit_release.erl	Sun Apr 15 22:14:12 2012 +0200
+@@ -0,0 +1,152 @@
++-module(rabbit_release).
++
++-export([start/0, stop/0]).
++
++-include("rabbit.hrl").
++
++-define(BaseApps, [rabbit]).
++-define(ERROR_CODE, 1).
++
++start() ->
++    %% Determine our various directories
++    [EnabledPluginsFile, PluginsDistDir, UnpackedPluginDir, RabbitHome] =
++        init:get_plain_arguments(),
++    RootName = UnpackedPluginDir ++ "/rabbit",
++
++    prepare_plugins(EnabledPluginsFile, PluginsDistDir, UnpackedPluginDir),
++
++    %% Build a list of required apps based on the fixed set, and any plugins
++    PluginApps = find_plugins(UnpackedPluginDir),
++    RequiredApps = ?BaseApps ++ PluginApps,
++
++    %% Build the entire set of dependencies - this will load the
++    %% applications along the way
++    AllApps = case catch sets:to_list(expand_dependencies(RequiredApps)) of
++                  {failed_to_load_app, App, Err} ->
++                      terminate("failed to load application ~s:~n~p",
++                                [App, Err]);
++                  AppList ->
++                      AppList
++              end,
++    AppVersions = [determine_version(App) || App <- AllApps],
++    RabbitVersion = proplists:get_value(rabbit, AppVersions),
++
++    %% Build the overall release descriptor
++    RDesc = {release,
++             {"rabbit", RabbitVersion},
++             {erts, erlang:system_info(version)},
++             AppVersions},
++
++    %% Write it out to $RABBITMQ_PLUGINS_EXPAND_DIR/rabbit.rel
++    rabbit_file:write_file(RootName ++ ".rel", io_lib:format("~p.~n", [RDesc])),
++
++    %% Compile the script
++    systools:make_script(RootName),
++    %% Make release tarfile
++    make_tar(RootName, RabbitHome),
++    terminate(0),
++    ok.
++
++stop() ->
++    ok.
++
++make_tar(Release, RabbitHome) ->
++    systools:make_tar(Release,
++                      [
++                       {dirs, [include, sbin, docs]},
++                       {erts, code:root_dir()},
++                       {outdir, RabbitHome ++ "/../.."}
++                      ]).
++
++determine_version(App) ->
++    application:load(App),
++    {ok, Vsn} = application:get_key(App, vsn),
++    {App, Vsn}.
++
++delete_recursively(Fn) ->
++    case rabbit_file:recursive_delete([Fn]) of
++        ok                 -> ok;
++        {error, {Path, E}} -> {error, {cannot_delete, Path, E}};
++        Error              -> Error
++    end.
++
++prepare_plugins(EnabledPluginsFile, PluginsDistDir, DestDir) ->
++    AllPlugins = rabbit_plugins:find_plugins(PluginsDistDir),
++    Enabled = rabbit_plugins:read_enabled_plugins(EnabledPluginsFile),
++    ToUnpack = rabbit_plugins:calculate_required_plugins(Enabled, AllPlugins),
++    ToUnpackPlugins = rabbit_plugins:lookup_plugins(ToUnpack, AllPlugins),
++
++    Missing = Enabled -- rabbit_plugins:plugin_names(ToUnpackPlugins),
++    case Missing of
++        [] -> ok;
++        _  -> io:format("Warning: the following enabled plugins were "
++                        "not found: ~p~n", [Missing])
++    end,
++
++    %% Eliminate the contents of the destination directory
++    case delete_recursively(DestDir) of
++        ok         -> ok;
++        {error, E} -> terminate("Could not delete dir ~s (~p)", [DestDir, E])
++    end,
++    case filelib:ensure_dir(DestDir ++ "/") of
++        ok          -> ok;
++        {error, E2} -> terminate("Could not create dir ~s (~p)", [DestDir, E2])
++    end,
++
++    [prepare_plugin(Plugin, DestDir) || Plugin <- ToUnpackPlugins].
++
++prepare_plugin(#plugin{type = ez, location = Location}, PluginDestDir) ->
++    zip:unzip(Location, [{cwd, PluginDestDir}]);
++prepare_plugin(#plugin{type = dir, name = Name, location = Location},
++               PluginsDestDir) ->
++    rabbit_file:recursive_copy(Location,
++                               filename:join([PluginsDestDir, Name])).
++
++find_plugins(PluginDir) ->
++    [prepare_dir_plugin(PluginName) ||
++        PluginName <- filelib:wildcard(PluginDir ++ "/*/ebin/*.app")].
++
++prepare_dir_plugin(PluginAppDescFn) ->
++    %% Add the plugin ebin directory to the load path
++    PluginEBinDirN = filename:dirname(PluginAppDescFn),
++    code:add_path(PluginEBinDirN),
++
++    %% We want the second-last token
++    NameTokens = string:tokens(PluginAppDescFn,"/."),
++    PluginNameString = lists:nth(length(NameTokens) - 1, NameTokens),
++    list_to_atom(PluginNameString).
++
++expand_dependencies(Pending) ->
++    expand_dependencies(sets:new(), Pending).
++expand_dependencies(Current, []) ->
++    Current;
++expand_dependencies(Current, [Next|Rest]) ->
++    case sets:is_element(Next, Current) of
++        true ->
++            expand_dependencies(Current, Rest);
++        false ->
++            case application:load(Next) of
++                ok ->
++                    ok;
++                {error, {already_loaded, _}} ->
++                    ok;
++                {error, Reason} ->
++                    throw({failed_to_load_app, Next, Reason})
++            end,
++            {ok, Required} = application:get_key(Next, applications),
++            Unique = [A || A <- Required, not(sets:is_element(A, Current))],
++            expand_dependencies(sets:add_element(Next, Current), Rest ++ Unique)
++    end.
++
++terminate(Fmt, Args) ->
++    io:format("ERROR: " ++ Fmt ++ "~n", Args),
++    terminate(?ERROR_CODE).
++
++terminate(Status) ->
++    case os:type() of
++        {unix,  _} -> halt(Status);
++        {win32, _} -> init:stop(Status),
++                      receive
++                      after infinity -> ok
++                      end
++    end.
