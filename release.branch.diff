@@ -1,6 +1,6 @@
-diff -r 60755ae0eee9 -r 069b4fb24c0a Makefile
+diff -r 60755ae0eee9 -r 9cbb98401fa9 Makefile
 --- a/Makefile	Thu Apr 12 18:38:34 2012 +0100
-+++ b/Makefile	Mon Apr 16 23:13:05 2012 +0200
++++ b/Makefile	Tue Apr 17 02:39:47 2012 +0200
 @@ -62,6 +62,12 @@
  TARBALL_NAME=rabbitmq-server-$(VERSION)
  TARGET_SRC_DIR=dist/$(TARBALL_NAME)
@@ -70,9 +70,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a Makefile
  srcdist: distclean
  	mkdir -p $(TARGET_SRC_DIR)/codegen
  	cp -r ebin src include LICENSE LICENSE-MPL-RabbitMQ INSTALL README $(TARGET_SRC_DIR)
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/scripts/make_rel
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/scripts/make_rel
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/scripts/make_rel	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/scripts/make_rel	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,25 @@
 +#!/bin/sh
 +
@@ -100,9 +100,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/scripts/make_rel
 +    -s rabbit_release \
 +    -extra "$RABBITMQ_ENABLED_PLUGINS_FILE" "$RABBITMQ_PLUGINS_DIR" "${RABBITMQ_PLUGINS_EXPAND_DIR}" "${RABBITMQ_HOME}"
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/README
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/README
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/README	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/README	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,29 @@
 +# NOTE: This is an unofficial release not supported by the RabbitMQ team #
 +
@@ -134,15 +134,15 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/README
 +
 +http://www.rabbitmq.com/documentation.html
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/enabled_plugins
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/enabled_plugins
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/enabled_plugins	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/enabled_plugins	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,1 @@
 +[rabbitmq_management].
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/post_install.sh
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/post_install.sh
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/post_install.sh	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/post_install.sh	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,6 @@
 +#!/bin/sh
 +ROOT="`pwd`"
@@ -150,9 +150,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/post_install.sh
 +sed s:%FINAL_ROOTDIR%:\""${ROOT}"\": $DIR/erl.src > $DIR/erl.tmp
 +sed s:\$BINDIR:\"\$BINDIR\": $DIR/erl.tmp > $DIR/erl
 +rm $DIR/erl.tmp
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-defaults
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/rabbitmq-defaults
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-defaults	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/rabbitmq-defaults	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,34 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -189,9 +189,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-defaults
 +BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start"
 +GENERIC_BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start_clean"
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-env
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/rabbitmq-env
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-env	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/rabbitmq-env	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,51 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -220,14 +220,14 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-env
 +      if expr "$REL_PATH" : '/.*' > /dev/null; then
 +        SCRIPT_PATH="$REL_PATH"
 +      else
-+        SCRIPT_PATH="`dirname "$SCRIPT_PATH"`/$REL_PATH"
++        SCRIPT_PATH="`dirname "${SCRIPT_PATH}"`/$REL_PATH"
 +      fi
 +    else
 +      SCRIPT_PATH=$FULL_PATH
 +    fi
 +done
 +
-+SCRIPT_DIR=`dirname $SCRIPT_PATH`
++SCRIPT_DIR=`dirname "$SCRIPT_PATH"`
 +
 +RELEASE_VERSION="%%VSN%%"
 +
@@ -236,18 +236,18 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-env
 +NODENAME=rabbit@${HOSTNAME%%.*}
 +
 +## Set defaults
-+. ${SCRIPT_DIR}/rabbitmq-defaults
++. "${SCRIPT_DIR}"/rabbitmq-defaults
 +
 +## Common defaults
 +SERVER_ERL_ARGS="+K true +A30 +P 1048576 \
 +  -kernel inet_default_connect_options [{nodelay,true}]"
 +
 +## Get configuration variables from the configure environment file
-+[ -f ${CONF_ENV_FILE} ] && . ${CONF_ENV_FILE}
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-server
++[ -f "${CONF_ENV_FILE}" ] && . "${CONF_ENV_FILE}"
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/rabbitmq-server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-server	Mon Apr 16 23:13:05 2012 +0200
-@@ -0,0 +1,107 @@
++++ b/pre-release/templates/rabbitmq-server	Tue Apr 17 02:39:47 2012 +0200
+@@ -0,0 +1,109 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
 +##  Version 1.1 (the "License"); you may not use this file except in
@@ -267,7 +267,8 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-server
 +
 +# Get default settings with user overrides for (RABBITMQ_)<var_name>
 +# Non-empty defaults should be set in rabbitmq-env
-+. `dirname $0`/rabbitmq-env
++BASE_DIR=`dirname "${0}"`
++. "${BASE_DIR}"/rabbitmq-env
 +
 +##--- Set environment vars RABBITMQ_<var_name> to defaults if not set
 +
@@ -314,8 +315,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-server
 +  CYGWIN*) # we make no attempt to record the cygwin pid; rabbitmqctl wait
 +           # will not be able to make sense of it anyway
 +           ;;
-+  *)       mkdir -p $(dirname ${RABBITMQ_PID_FILE});
-+           echo $$ > ${RABBITMQ_PID_FILE}
++  *)       RABBIT_PID_DIR=$(dirname "${RABBITMQ_PID_FILE}")
++           mkdir -p "${RABBIT_PID_DIR}";
++           echo $$ > "${RABBITMQ_PID_FILE}"
 +           ;;
 +esac
 +
@@ -355,10 +357,10 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmq-server
 +    ${RABBITMQ_SERVER_START_ARGS} \
 +    "$@"
 +
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmqctl
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/rabbitmqctl
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmqctl	Mon Apr 16 23:13:05 2012 +0200
-@@ -0,0 +1,39 @@
++++ b/pre-release/templates/rabbitmqctl	Tue Apr 17 02:39:47 2012 +0200
+@@ -0,0 +1,40 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
 +##  Version 1.1 (the "License"); you may not use this file except in
@@ -378,7 +380,8 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmqctl
 +
 +# Get default settings with user overrides for (RABBITMQ_)<var_name>
 +# Non-empty defaults should be set in rabbitmq-env
-+. `dirname $0`/rabbitmq-env
++BASE_DIR=`dirname "${0}"`
++. "${BASE_DIR}"/rabbitmq-env
 +
 +##--- Set environment vars RABBITMQ_<var_name> to defaults if not set
 +
@@ -398,21 +401,21 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/rabbitmqctl
 +    -s rabbit_control \
 +    -nodename $RABBITMQ_NODENAME \
 +    -extra "$@"
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/start_server
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/start_server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/start_server	Mon Apr 16 23:13:05 2012 +0200
++++ b/pre-release/templates/start_server	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,21 @@
 +#!/bin/sh
-+ROOT="`pwd`"
-+$ROOT/bin/post_install.sh
-+$ROOT/lib/rabbit-%%VSN%%/sbin/rabbitmq-server -detached
++
++./bin/post_install.sh
++./lib/rabbit-%%VSN%%/sbin/rabbitmq-server -detached
 +
 +exit_code="1"
 +tries="0"
 +
 +while [ $exit_code -gt 0 ]
 +do
-+    $ROOT/lib/rabbit-%%VSN%%/sbin/rabbitmqctl status | grep 'RabbitMQ Management Console' > /dev/null
++    ./lib/rabbit-%%VSN%%/sbin/rabbitmqctl status | grep 'RabbitMQ Management Console' > /dev/null
 +    exit_code=$?
 +    # exit after 100 attempts
 +    tries=$[$tries+1]
@@ -424,14 +427,13 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/start_server
 +
 +exit 0
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/stop_server
+diff -r 60755ae0eee9 -r 9cbb98401fa9 pre-release/templates/stop_server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/stop_server	Mon Apr 16 23:13:05 2012 +0200
-@@ -0,0 +1,25 @@
++++ b/pre-release/templates/stop_server	Tue Apr 17 02:39:47 2012 +0200
+@@ -0,0 +1,24 @@
 +#!/bin/sh
-+ROOT=`pwd`
-+EPMD_ROOT="${ROOT}"/%%ERTS_VSN%%/bin
-+"${ROOT}"/lib/rabbit-%%VSN%%/sbin/rabbitmqctl stop > /dev/null
++EPMD_ROOT=./%%ERTS_VSN%%/bin
++./lib/rabbit-%%VSN%%/sbin/rabbitmqctl stop > /dev/null
 +
 +exit_code="0"
 +tries="0"
@@ -453,9 +455,9 @@ diff -r 60755ae0eee9 -r 069b4fb24c0a pre-release/templates/stop_server
 +done
 +
 +"${EPMD_ROOT}"/epmd -names | grep -q name || epmd -kill
-diff -r 60755ae0eee9 -r 069b4fb24c0a src/rabbit_release.erl
+diff -r 60755ae0eee9 -r 9cbb98401fa9 src/rabbit_release.erl
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/src/rabbit_release.erl	Mon Apr 16 23:13:05 2012 +0200
++++ b/src/rabbit_release.erl	Tue Apr 17 02:39:47 2012 +0200
 @@ -0,0 +1,152 @@
 +-module(rabbit_release).
 +
