@@ -60,4 +60,4 @@ and file an issue on this repo.
 
 This work is licensed under the Mozilla Public License as stated here: [http://www.rabbitmq.com/mpl.html](http://www.rabbitmq.com/mpl.html).
 
-The Erlang ERTS is distrubted according to the Erlang Public License: [http://www.erlang.org/EPLICENSE](http://www.erlang.org/EPLICENSE)
+The Erlang ERTS is distributed according to the Erlang Public License: [http://www.erlang.org/EPLICENSE](http://www.erlang.org/EPLICENSE)
