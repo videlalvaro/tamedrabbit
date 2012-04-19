@@ -1,0 +1,122 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Tamedrabbit by videlalvaro</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/videlalvaro/tamedrabbit">Fork On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/videlalvaro/tamedrabbit/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/videlalvaro/tamedrabbit/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Tamedrabbit</h1>
+          <p></p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/videlalvaro">videlalvaro</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="http://twitter.com/#!/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>RabbitMQ Standalone Release</h1>
+
+<p>In this repo you can find RabbitMQ packaged as a Mac OSX app that looks like this:</p>
+
+<p><img src="https://github.com/videlalvaro/rabbitmq-release/raw/master/images/rabbit_app.png" alt="RabbitMQ.app"></p>
+
+<p>You can download the app here <a href="http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg">http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg</a>.</p>
+
+<p>This repo hosts the file <code>release.branch.diff</code> that can be applied to the
+<a href="http://hg.rabbitmq.com/rabbitmq-server/">rabbitmq-server</a> repo
+to add a make target that allows you to create a rabbitmq release that includes the Erlang
+runtime system (erts). You also need to apply the <code>rabbit_management.diff</code> patch to the <a href="http://hg.rabbitmq.com/rabbitmq-management/">rabbitmq-management repo</a></p>
+
+<p>Inside the downloads folder you can find the standalone release file
+<a href="https://raw.github.com/videlalvaro/rabbitmq-release/master/downloads/rabbitmq-server-osx-2.8.1u.tar.gz">rabbitmq-server-osx-2.8.1u.tar.gz</a>.
+Feel free to untar it and test it on your Mac.</p>
+
+<p>The release has been built with <code>Erlang R15B01 (erts-5.9.1)</code> on a Mac with <strong>OSX Lion</strong>.</p>
+
+<p>Read the instructions located in the realted README file to see how to run the server.</p>
+
+<h2>Idea</h2>
+
+<p>The idea of generating that relase is to provide an easy to use RabbitMQ distribution that can
+be used for development. By easy to use it means that you don't need to build/install Erlang to
+run the server since a minimal Erlang distribuion is self contained there.</p>
+
+<p>Also the rabbitmq-management plugin is pre installed so you have a friendly user interface
+that you can use to interact with RabbitMQ.</p>
+
+<h2>Building it yourself</h2>
+
+<p>Before trying this make sure you have installed the required tools listed
+<a href="http://www.rabbitmq.com/build-server.html">here</a></p>
+
+<pre><code>hg clone <a href="http://hg.rabbitmq.com/rabbitmq-public-umbrella/">http://hg.rabbitmq.com/rabbitmq-public-umbrella/</a>
+cd rabbitmq-public-umbrella
+hg checkout 93ffc675897c
+make co
+cd rabbitmq
+hg checkout 7df76eda4753
+hg import --no-commit path/to/release.branch.diff
+cd ..
+make release VERSION=2.8.1u
+cd rabbitmq-server
+make plugins PLUGINS_SRC_DIR=".." VERSION=2.8.1u
+chmod +x pre-release/scripts/make_rel
+make rlsdist VERSION=2.8.1u PLUGINS_SRC_DIR=..
+</code></pre>
+
+<p>Your new release file will be inside:</p>
+
+<p><code>rabbitmq-server/pre-release/build/rabbitmq-server-2.8.1u.tar.gz</code></p>
+
+<h1>NOTE</h1>
+
+<p>This release is unofficial and not supported by the RabbitMQ. If something doesn't work blame me
+and file an issue on this repo.</p>
+
+<h1>LICENSE</h1>
+
+<p>This work is licensed under the Mozilla Public License as stated here: <a href="http://www.rabbitmq.com/mpl.html">http://www.rabbitmq.com/mpl.html</a>.</p>
+
+<p>The Erlang ERTS is distributed according to the Erlang Public License: <a href="http://www.erlang.org/EPLICENSE">http://www.erlang.org/EPLICENSE</a></p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><!--<![endif]-->
+              <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            try {
+              var pageTracker = _gat._getTracker("UA-31024870-1");
+            pageTracker._trackPageview();
+            } catch(err) {}
+          </script>
+
+  </body>
+</html>
