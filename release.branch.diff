@@ -1,6 +1,6 @@
-diff -r 60755ae0eee9 -r 7c255bccb223 Makefile
+diff -r 60755ae0eee9 -r 2545616b505b Makefile
 --- a/Makefile	Thu Apr 12 18:38:34 2012 +0100
-+++ b/Makefile	Fri Apr 20 00:17:38 2012 +0200
++++ b/Makefile	Fri Apr 20 01:51:11 2012 +0200
 @@ -62,6 +62,12 @@
  TARBALL_NAME=rabbitmq-server-$(VERSION)
  TARGET_SRC_DIR=dist/$(TARBALL_NAME)
@@ -14,7 +14,7 @@ diff -r 60755ae0eee9 -r 7c255bccb223 Makefile
  SIBLING_CODEGEN_DIR=../rabbitmq-codegen/
  AMQP_CODEGEN_DIR=$(shell [ -d $(SIBLING_CODEGEN_DIR) ] && echo $(SIBLING_CODEGEN_DIR) || echo codegen)
  AMQP_SPEC_JSON_FILES_0_9_1=$(AMQP_CODEGEN_DIR)/amqp-rabbitmq-0.9.1.json
-@@ -243,6 +249,58 @@
+@@ -243,6 +249,59 @@
  
  ########################################################################
  
@@ -45,12 +45,13 @@ diff -r 60755ae0eee9 -r 7c255bccb223 Makefile
 +# copy post_install script
 +	mkdir $(RLS_DIR)/bin
 +	sed 's/%%ERTS_VSN%%/$(ERTS_VSN)/' pre-release/templates/post_install.sh > $(RLS_DIR)/bin/post_install.sh
-+# add the start & stop commands
-+	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/start_server > $(RLS_DIR)/bin/start_server
-+	cp pre-release/templates/stop_server $(RLS_DIR)/bin/
++# add the start_server command
++	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/start_server > $(RLS_DIR)/bin/start_server.tmp
++	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' $(RLS_DIR)/bin/start_server.tmp > $(RLS_DIR)/bin/start_server
++# add the stop_server command
 +	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/stop_server > $(RLS_DIR)/bin/stop_server.tmp
 +	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' $(RLS_DIR)/bin/stop_server.tmp > $(RLS_DIR)/bin/stop_server
-+	rm $(RLS_DIR)/bin/stop_server.tmp
++	rm $(RLS_DIR)/bin/*.tmp
 +	chmod +x  $(RLS_DIR)/bin/*
 +# add minimal boot file
 +	cp $(ERTS_ROOT_DIR)/bin/start_clean.boot $(RLS_DIR)/releases/$(VERSION)
@@ -73,9 +74,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 Makefile
  srcdist: distclean
  	mkdir -p $(TARGET_SRC_DIR)/codegen
  	cp -r ebin src include LICENSE LICENSE-MPL-RabbitMQ INSTALL README $(TARGET_SRC_DIR)
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/scripts/make_rel
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/scripts/make_rel
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/scripts/make_rel	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/scripts/make_rel	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,25 @@
 +#!/bin/sh
 +
@@ -103,9 +104,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/scripts/make_rel
 +    -s rabbit_release \
 +    -extra "$RABBITMQ_ENABLED_PLUGINS_FILE" "$RABBITMQ_PLUGINS_DIR" "${RABBITMQ_PLUGINS_EXPAND_DIR}" "${RABBITMQ_HOME}"
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/README
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/README
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/README	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/README	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,29 @@
 +# NOTE: This is an unofficial release not supported by the RabbitMQ team #
 +
@@ -137,15 +138,15 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/README
 +
 +http://www.rabbitmq.com/documentation.html
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/enabled_plugins
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/enabled_plugins
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/enabled_plugins	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/enabled_plugins	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,1 @@
 +[rabbitmq_management].
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/post_install.sh
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/post_install.sh
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/post_install.sh	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/post_install.sh	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,6 @@
 +#!/bin/sh
 +ROOT="`pwd`"
@@ -153,9 +154,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/post_install.sh
 +sed s:%FINAL_ROOTDIR%:\""${ROOT}"\": $DIR/erl.src > $DIR/erl.tmp
 +sed s:\$BINDIR:\"\$BINDIR\": $DIR/erl.tmp > $DIR/erl
 +rm $DIR/erl.tmp
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-defaults
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/rabbitmq-defaults
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-defaults	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/rabbitmq-defaults	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,34 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -192,9 +193,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-defaults
 +BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start"
 +GENERIC_BOOT_FILE="${SYS_PREFIX}/releases/${RELEASE_VERSION}/start_clean"
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-env
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/rabbitmq-env
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-env	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/rabbitmq-env	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,51 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -247,9 +248,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-env
 +
 +## Get configuration variables from the configure environment file
 +[ -f "${CONF_ENV_FILE}" ] && . "${CONF_ENV_FILE}"
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-server
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/rabbitmq-server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmq-server	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/rabbitmq-server	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,109 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -360,9 +361,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmq-server
 +    ${RABBITMQ_SERVER_START_ARGS} \
 +    "$@"
 +
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmqctl
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/rabbitmqctl
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/rabbitmqctl	Fri Apr 20 00:17:38 2012 +0200
++++ b/pre-release/templates/rabbitmqctl	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,40 @@
 +#!/bin/sh
 +##  The contents of this file are subject to the Mozilla Public License
@@ -404,13 +405,21 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/rabbitmqctl
 +    -s rabbit_control \
 +    -nodename $RABBITMQ_NODENAME \
 +    -extra "$@"
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/start_server
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/start_server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/start_server	Fri Apr 20 00:17:38 2012 +0200
-@@ -0,0 +1,22 @@
++++ b/pre-release/templates/start_server	Fri Apr 20 01:51:11 2012 +0200
+@@ -0,0 +1,30 @@
 +#!/bin/sh
++EPMD_ROOT=./%%ERTS_VSN%%/bin
 +
 +./bin/post_install.sh
++
++ps ax | grep epmd | grep -v grep
++
++if [ $? -ne 0 ] ; then
++    "${EPMD_ROOT}"/epmd -daemon
++fi
++
 +./lib/rabbit-%%VSN%%/sbin/rabbitmq-server -detached
 +
 +exit_code=1
@@ -431,12 +440,13 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/start_server
 +
 +exit 0
 \ No newline at end of file
-diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/stop_server
+diff -r 60755ae0eee9 -r 2545616b505b pre-release/templates/stop_server
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/pre-release/templates/stop_server	Fri Apr 20 00:17:38 2012 +0200
-@@ -0,0 +1,24 @@
++++ b/pre-release/templates/stop_server	Fri Apr 20 01:51:11 2012 +0200
+@@ -0,0 +1,25 @@
 +#!/bin/sh
 +EPMD_ROOT=./%%ERTS_VSN%%/bin
++
 +./lib/rabbit-%%VSN%%/sbin/rabbitmqctl stop > /dev/null
 +
 +exit_code=0
@@ -459,9 +469,9 @@ diff -r 60755ae0eee9 -r 7c255bccb223 pre-release/templates/stop_server
 +done
 +
 +"${EPMD_ROOT}"/epmd -names | grep -q name || epmd -kill > /dev/null
-diff -r 60755ae0eee9 -r 7c255bccb223 src/rabbit_release.erl
+diff -r 60755ae0eee9 -r 2545616b505b src/rabbit_release.erl
 --- /dev/null	Thu Jan 01 00:00:00 1970 +0000
-+++ b/src/rabbit_release.erl	Fri Apr 20 00:17:38 2012 +0200
++++ b/src/rabbit_release.erl	Fri Apr 20 01:51:11 2012 +0200
 @@ -0,0 +1,185 @@
 +-module(rabbit_release).
 +
