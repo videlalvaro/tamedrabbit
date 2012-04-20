@@ -28,6 +28,8 @@ that you can use to interact with RabbitMQ.
 Before trying this make sure you have installed the required tools listed
 [here](http://www.rabbitmq.com/build-server.html)
 
+This requires `curl` installed.
+
     $ git clone git://github.com/videlalvaro/tamedrabbit.git
     $ cd tammedrabbit
     $ make release VERSION=2.8.1
