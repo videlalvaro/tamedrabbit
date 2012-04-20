@@ -22,4 +22,4 @@ do
     sleep 1
 done
 
-"${EPMD_ROOT}"/epmd -names | grep -q name || epmd -kill > /dev/null
+"${EPMD_ROOT}"/epmd -kill > /dev/null
