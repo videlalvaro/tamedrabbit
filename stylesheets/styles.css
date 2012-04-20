@@ -790,7 +790,7 @@ section #title {
   border: 0;
   outline: none;
   margin: 0 0 50px 0;
-  padding: 0 0 5px 0;
+  padding: 0 0 55px;
 }
 section #title h1 {
   font-family: 'OpenSansLight', "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -813,11 +813,15 @@ section #title .credits {
   color: #696969;
   margin-top: -10px;
 }
-section #title .credits.left {
-  float: left;
+
+section #title .credits.rmqia {
+	float:  right;
+	padding-left: 20px;
 }
+
 section #title .credits.right {
-  float: right;
+	text-align: right;
+	float: right;
 }
 
 @media print, screen and (max-width: 720px) {
