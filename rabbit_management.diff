@@ -1,0 +1,10 @@
+diff -r 38ca07cc2e24 src/rabbitmq_management.app.src
+--- a/src/rabbitmq_management.app.src	Thu Mar 29 17:45:03 2012 +0100
++++ b/src/rabbitmq_management.app.src	Mon Apr 16 21:09:54 2012 +0200
+@@ -6,5 +6,5 @@
+   {mod, {rabbit_mgmt_app, []}},
+   {env, [{http_log_dir,          none},
+          {load_definitions,      none}]},
+-  {applications, [kernel, stdlib, rabbit, rabbitmq_mochiweb, amqp_client,
++  {applications, [kernel, stdlib, rabbit, xmerl, rabbitmq_mochiweb, amqp_client,
+                   rabbitmq_management_agent]}]}.

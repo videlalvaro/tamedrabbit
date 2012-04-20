@@ -1,0 +1,25 @@
+#!/bin/sh
+EPMD_ROOT=./%%ERTS_VSN%%/bin
+
+./lib/rabbit-%%VSN%%/sbin/rabbitmqctl stop > /dev/null
+
+exit_code=0
+tries=0
+
+while [ $exit_code -eq 0 ]
+do
+
+    "${EPMD_ROOT}"/epmd -names | grep -q name
+    exit_code=$?
+
+    # exit after 10 attempts
+    tries=$((tries+1))
+    if [ $tries -eq 10 ]
+    then
+        exit 1
+    fi
+
+    sleep 1
+done
+
+"${EPMD_ROOT}"/epmd -names | grep -q name || epmd -kill > /dev/null
