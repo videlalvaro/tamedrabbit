@@ -30,6 +30,7 @@ clean-release-dir:
 
 .PHONY : clean
 clean: clean-build-dir clean-release-dir
+	rm erlang/*.beam
 
 $(TMP_BUILD_DIR):
 	curl -o $(SRC_TARBALL) $(RMQ_SOURCE_URL)
