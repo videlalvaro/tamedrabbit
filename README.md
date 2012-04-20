@@ -46,7 +46,7 @@ You can customize the enabled plugins by providing the varialbe `PLUGINS` with a
 
 # NOTE #
 
-This release is unofficial and not supported by the RabbitMQ team. If something doesn't work blame me and file an issue on this repo.
+This release is unofficial and not supported by the RabbitMQ team. If something doesn't work file an issue on this repo.
 
 # LICENSE #
 
