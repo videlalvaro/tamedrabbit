@@ -6,11 +6,6 @@ In this repo you can find RabbitMQ packaged as a Mac OSX app that looks like thi
 
 You can download the app here [http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg](http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg).
 
-This repo hosts the file `release.branch.diff` that can be applied to the
-[rabbitmq-server](http://hg.rabbitmq.com/rabbitmq-server/) repo
-to add a make target that allows you to create a rabbitmq release that includes the Erlang
-runtime system (erts). You also need to apply the `rabbit_management.diff` patch to the [rabbitmq-management repo](http://hg.rabbitmq.com/rabbitmq-management/)
-
 Inside the downloads folder you can find the standalone release file
 [rabbitmq-server-osx-2.8.1u.tar.gz](https://raw.github.com/videlalvaro/rabbitmq-release/master/downloads/rabbitmq-server-osx-2.8.1u.tar.gz).
 Feel free to untar it and test it on your Mac.
@@ -33,28 +28,25 @@ that you can use to interact with RabbitMQ.
 Before trying this make sure you have installed the required tools listed
 [here](http://www.rabbitmq.com/build-server.html)
 
-    hg clone http://hg.rabbitmq.com/rabbitmq-public-umbrella/
-    cd rabbitmq-public-umbrella
-    hg checkout 93ffc675897c
-    make co
-    cd rabbitmq
-    hg checkout 7df76eda4753
-    hg import --no-commit path/to/release.branch.diff
-    cd ..
-    make release VERSION=2.8.1u
-    cd rabbitmq-server
-    make plugins PLUGINS_SRC_DIR=".." VERSION=2.8.1u
-    chmod +x pre-release/scripts/make_rel
-    make rlsdist VERSION=2.8.1u PLUGINS_SRC_DIR=..
+    $ git clone git://github.com/videlalvaro/tamedrabbit.git
+    $ cd tammedrabbit
+    $ make release VERSION=2.8.1
 
 Your new release file will be inside:
 
-`rabbitmq-server/pre-release/build/rabbitmq-server-2.8.1u.tar.gz`
+`tammedrabbit/pre-release/build/rabbitmq-server-<VERSION>u.tar.gz`
+
+Note that we add an 'u' to the VERSION number to note that this release is _unofficial_.
+
+Note that `VERSION` must be one of the RabbitMQ official releases. One of the make targets will attempt to fetch RabbitMQ' source code from here: [http://www.rabbitmq.com/releases/rabbitmq-server/](http://www.rabbitmq.com/releases/rabbitmq-server/) based on the version number you provide.
+
+You can customize the enabled plugins by providing the varialbe `PLUGINS` with a comma separated list of plugins. Only officially provided plugins are supported. For example you could create a release like this:
+
+    $ make release VERSION=2.8.1 PLUGINS="rabbitmq_management,rabbitmq_shovel"
 
 # NOTE #
 
-This release is unofficial and not supported by the RabbitMQ team. If something doesn't work blame me
-and file an issue on this repo.
+This release is unofficial and not supported by the RabbitMQ team. If something doesn't work blame me and file an issue on this repo.
 
 # LICENSE #
 
