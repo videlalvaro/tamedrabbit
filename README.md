@@ -53,7 +53,7 @@ Your new release file will be inside:
 
 # NOTE #
 
-This release is unofficial and not supported by the RabbitMQ. If something doesn't work blame me
+This release is unofficial and not supported by the RabbitMQ team. If something doesn't work blame me
 and file an issue on this repo.
 
 # LICENSE #
