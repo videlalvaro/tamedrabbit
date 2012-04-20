@@ -827,14 +827,7 @@ section #title .credits.right {
     line-height: 30px;
     text-align: center;
   }
-  #title .credits .left {
-    float: none;
-    display: block;
-  }
-  #title .credits .right {
-    float: none;
-    display: block;
-  }
+
 }
 @media print, screen and (max-width: 480px) {
   #header {
