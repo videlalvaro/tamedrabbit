@@ -1,0 +1,30 @@
+#!/bin/sh
+EPMD_ROOT=./%%ERTS_VSN%%/bin
+
+./bin/post_install.sh
+
+ps ax | grep epmd | grep -v grep
+
+if [ $? -ne 0 ] ; then
+    "${EPMD_ROOT}"/epmd -daemon
+fi
+
+./lib/rabbit-%%VSN%%/sbin/rabbitmq-server -detached
+
+exit_code=1
+tries=0
+
+while [ $exit_code -gt 0 ]
+do
+    ./lib/rabbit-%%VSN%%/sbin/rabbitmqctl status | grep 'RabbitMQ Management Console' > /dev/null
+    exit_code=$?
+    # exit after 10 attempts
+    tries=$((tries+1))
+    if [ $tries -eq 10 ]
+    then
+        exit 1
+    fi
+    sleep 1
+done
+
+exit 0

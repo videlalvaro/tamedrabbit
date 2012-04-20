@@ -1,0 +1,27 @@
+# NOTE: This is an unofficial release not supported by the RabbitMQ team #
+
+## Starting RabbitMQ ##
+
+     $ ./bin/start_server
+
+## Stoping RabbitMQ ##
+
+     $ ./bin/stop_server
+
+## Configuration ##
+
+The server user and password are the default ones `guest:guest`
+
+This release comes with the Management Plugin already installed. To use it open http://localhost:55672
+
+## Documentation ##
+
+For documentation see:
+
+[http://www.rabbitmq.com/documentation.html](http://www.rabbitmq.com/documentation.html).
+
+# LICENSE #
+
+This work is licensed under the Mozilla Public License as stated here: [http://www.rabbitmq.com/mpl.html](http://www.rabbitmq.com/mpl.html).
+
+The Erlang ERTS is distributed according to the Erlang Public License: [http://www.erlang.org/EPLICENSE](http://www.erlang.org/EPLICENSE).
