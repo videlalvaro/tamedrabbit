@@ -12,8 +12,6 @@
 
 The server user and password are the default ones `guest:guest`
 
-This release comes with the Management Plugin already installed. To use it open http://localhost:55672
-
 ## Documentation ##
 
 For documentation see:
