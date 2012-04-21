@@ -6,7 +6,7 @@
 -include("rabbit.hrl").
 
 %% TODO remove xmerl when the new rabbitmq_management is released
--define(BaseApps, [rabbit, xmerl]).
+-define(BaseApps, [rabbit, xmerl, inets]).
 -define(ERROR_CODE, 1).
 
 start() ->
@@ -65,7 +65,7 @@ stop() ->
 make_tar(Release, RabbitHome) ->
     systools:make_tar(Release,
                       [
-                       {dirs, [include, sbin, docs]},
+                       {dirs, [include, sbin, docs, plugins]},
                        {erts, code:root_dir()},
                        {outdir, RabbitHome ++ "/../.."}
                       ]).
