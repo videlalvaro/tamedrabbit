@@ -1,0 +1,11 @@
+#!/bin/sh
+
+EPMD_ROOT=./%%ERTS_VSN%%/bin
+
+"${EPMD_ROOT}"/epmd -daemon
+"${EPMD_ROOT}"/epmd -names > /dev/null
+
+until [ $? -eq 0 ] ;
+do
+    "${EPMD_ROOT}"/epmd -names > /dev/null
+done

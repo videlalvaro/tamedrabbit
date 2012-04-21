@@ -71,6 +71,9 @@ case "$(uname -s)" in
            ;;
 esac
 
+## start epmd since erlang might fail in a path with spaces
+. "${SYS_PREFIX}"/bin/start_epmd
+
 RABBITMQ_EBIN_ROOT="${RABBITMQ_HOME}/ebin"
 if [ "x" = "x$RABBITMQ_NODE_ONLY" ]; then
     if "${ERTS_DIR}"/erl \
@@ -104,6 +107,11 @@ RABBITMQ_LISTEN_ARG=
 
 set -f
 
+# redirect erlang output
+exec > ${RABBITMQ_LOG_BASE}/erlang.out
+# clean out file
+echo ""
+
 exec "${ERTS_DIR}"/erl \
     ${RABBITMQ_EBIN_PATH} \
     ${RABBITMQ_START_RABBIT} \
@@ -122,5 +130,4 @@ exec "${ERTS_DIR}"/erl \
     -os_mon start_memsup false \
     -mnesia dir "\"${RABBITMQ_MNESIA_DIR}\"" \
     ${RABBITMQ_SERVER_START_ARGS} \
-    "$@"
-
+    "$@" &

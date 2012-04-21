@@ -27,6 +27,9 @@ BASE_DIR=`dirname "${0}"`
 
 ##--- End of overridden <var_name> variables
 
+## start epmd since erlang might fail in a path with spaces
+. "${SYS_PREFIX}"/bin/start_epmd
+
 exec "${ERTS_DIR}"/erl \
     -pa "${RABBITMQ_HOME}/ebin" \
     -noinput \

@@ -18,6 +18,8 @@ RABBITMQ_ENABLED_PLUGINS_FILE=$(RABBITMQ_HOME)/etc/rabbitmq/enabled_plugins
 RABBITMQ_PLUGINS_DIR=$(RABBITMQ_HOME)/plugins
 RABBITMQ_PLUGINS_EXPAND_DIR=$(RABBITMQ_PLUGINS_DIR)/expand
 
+PLUGINS?=""
+
 .PHONY : clean-build-dir
 clean-build-dir:
 	rm -rf $(TMP_BUILD_DIR)
@@ -30,7 +32,6 @@ clean-release-dir:
 clean: clean-build-dir clean-release-dir
 	rm erlang/*.beam
 	rm -rf build
-
 $(TMP_BUILD_DIR):
 	curl -o $(SRC_TARBALL) $(RMQ_SOURCE_URL)
 	tar -C /tmp -xzvf $(SRC_TARBALL)
@@ -50,6 +51,7 @@ generate_release:
 
 release: $(RABBITMQ) clean-release-dir
 # prepare build directory
+	rm -rf build
 	mkdir -p $(RLS_DIR)
 # copy server files
 	cp -r $(TMP_BUILD_DIR)/ebin $(TMP_BUILD_DIR)/include $(TMP_BUILD_DIR)/plugins $(RLS_DIR)
@@ -74,6 +76,8 @@ release: $(RABBITMQ) clean-release-dir
 	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/stop_server > $(RLS_DIR)/bin/stop_server.tmp
 	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' $(RLS_DIR)/bin/stop_server.tmp > $(RLS_DIR)/bin/stop_server
 	rm $(RLS_DIR)/bin/*.tmp
+# add the start_epmd command
+	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/start_epmd > $(RLS_DIR)/bin/start_epmd
 	chmod +x  $(RLS_DIR)/bin/*
 # add minimal boot file
 	cp $(ERTS_ROOT_DIR)/bin/start_clean.boot $(RLS_DIR)/releases/$(VERSION)
@@ -88,6 +92,10 @@ release: $(RABBITMQ) clean-release-dir
 	mkdir -p $(RLS_DIR)/etc/rabbitmq
 	mkdir -p $(RLS_DIR)/var/log/rabbitmq
 	mkdir -p $(RLS_DIR)/var/lib/rabbitmq/mnesia
+# enable default plugins
+ifneq "$(PLUGINS)" ""
+	echo "[$(PLUGINS)]." > $(RLS_DIR)/etc/rabbitmq/enabled_plugins
+endif
 # generate final tar
 	(cd $(RLS_BUILD_DIR); tar -zchf $(TARBALL_NAME)u.tar.gz $(TARBALL_NAME))
 	mkdir build
