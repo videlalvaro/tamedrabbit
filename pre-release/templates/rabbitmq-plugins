@@ -17,13 +17,12 @@
 
 # Get default settings with user overrides for (RABBITMQ_)<var_name>
 # Non-empty defaults should be set in rabbitmq-env
-BASE_DIR=`dirname "${0}"`
-. "${BASE_DIR}"/rabbitmq-env
+. `dirname $0`/rabbitmq-env
 
 ##--- Set environment vars RABBITMQ_<var_name> to defaults if not set
 
-[ "x" = "x$RABBITMQ_NODENAME" ] && RABBITMQ_NODENAME=${NODENAME}
-[ "x" = "x$RABBITMQ_CTL_ERL_ARGS" ] && RABBITMQ_CTL_ERL_ARGS=${CTL_ERL_ARGS}
+[ "x" = "x$RABBITMQ_ENABLED_PLUGINS_FILE" ] && RABBITMQ_ENABLED_PLUGINS_FILE=${ENABLED_PLUGINS_FILE}
+[ "x" = "x$RABBITMQ_PLUGINS_DIR" ] && RABBITMQ_PLUGINS_DIR=${PLUGINS_DIR}
 
 ##--- End of overridden <var_name> variables
 
@@ -32,8 +31,8 @@ exec "${ERTS_DIR}"/erl \
     -noinput \
     -hidden \
     -boot "${CLEAN_BOOT_FILE}" \
-    ${RABBITMQ_CTL_ERL_ARGS} \
-    -sname rabbitmqctl$$ \
-    -s rabbit_control \
-    -nodename $RABBITMQ_NODENAME \
+    -sname rabbitmq-plugins$$ \
+    -s rabbit_plugins \
+    -enabled_plugins_file "$RABBITMQ_ENABLED_PLUGINS_FILE" \
+    -plugins_dist_dir "$RABBITMQ_PLUGINS_DIR" \
     -extra "$@"
