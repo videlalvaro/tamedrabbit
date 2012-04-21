@@ -70,12 +70,9 @@ release: $(RABBITMQ) clean-release-dir
 	mkdir $(RLS_DIR)/bin
 	sed 's/%%ERTS_VSN%%/$(ERTS_VSN)/' pre-release/templates/post_install.sh > $(RLS_DIR)/bin/post_install.sh
 # add the start_server command
-	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/start_server > $(RLS_DIR)/bin/start_server.tmp
-	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' $(RLS_DIR)/bin/start_server.tmp > $(RLS_DIR)/bin/start_server
+	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/start_server > $(RLS_DIR)/bin/start_server
 # add the stop_server command
-	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/stop_server > $(RLS_DIR)/bin/stop_server.tmp
-	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' $(RLS_DIR)/bin/stop_server.tmp > $(RLS_DIR)/bin/stop_server
-	rm $(RLS_DIR)/bin/*.tmp
+	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/stop_server > $(RLS_DIR)/bin/stop_server
 # add the start_epmd command
 	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/start_epmd > $(RLS_DIR)/bin/start_epmd
 	chmod +x  $(RLS_DIR)/bin/*
@@ -96,6 +93,9 @@ release: $(RABBITMQ) clean-release-dir
 ifneq "$(PLUGINS)" ""
 	echo "[$(PLUGINS)]." > $(RLS_DIR)/etc/rabbitmq/enabled_plugins
 endif
+# move rabbit app to top level
+	mv $(RLS_DIR)/lib/rabbit-$(VERSION)/* $(RLS_DIR)/
+	rm -rf $(RLS_DIR)/lib/rabbit-$(VERSION)
 # generate final tar
 	(cd $(RLS_BUILD_DIR); tar -zchf $(TARBALL_NAME)u.tar.gz $(TARBALL_NAME))
 	mkdir build

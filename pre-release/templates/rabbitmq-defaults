@@ -16,7 +16,7 @@
 ##
 
 ### next line potentially updated in package install steps
-SYS_PREFIX="${RABBITMQ_HOME}/../.."
+SYS_PREFIX="${RABBITMQ_HOME}"
 ERTS_DIR="${SYS_PREFIX}/%%ERTS_VSN%%/bin"
 
 ## Set default values

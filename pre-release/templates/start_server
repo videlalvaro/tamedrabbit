@@ -2,14 +2,14 @@
 EPMD_ROOT=./%%ERTS_VSN%%/bin
 LOG_BASE="./var/log/rabbitmq"
 ./bin/post_install.sh
-./lib/rabbit-%%VSN%%/sbin/rabbitmq-server
+./sbin/rabbitmq-server
 
 exit_code=1
 tries=0
 
 while [ $exit_code -gt 0 ]
 do
-    grep 'broker running' "${LOG_BASE}"/erlang.out > /dev/null
+    grep 'broker running\|already running' "${LOG_BASE}"/erlang.out > /dev/null
     exit_code=$?
     # exit after 10 attempts
     tries=$((tries+1))
