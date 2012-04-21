@@ -18,8 +18,6 @@ RABBITMQ_ENABLED_PLUGINS_FILE=$(RABBITMQ_HOME)/etc/rabbitmq/enabled_plugins
 RABBITMQ_PLUGINS_DIR=$(RABBITMQ_HOME)/plugins
 RABBITMQ_PLUGINS_EXPAND_DIR=$(RABBITMQ_PLUGINS_DIR)/expand
 
-PLUGINS?=rabbitmq_management
-
 .PHONY : clean-build-dir
 clean-build-dir:
 	rm -rf $(TMP_BUILD_DIR)
@@ -31,6 +29,7 @@ clean-release-dir:
 .PHONY : clean
 clean: clean-build-dir clean-release-dir
 	rm erlang/*.beam
+	rm -rf build
 
 $(TMP_BUILD_DIR):
 	curl -o $(SRC_TARBALL) $(RMQ_SOURCE_URL)
@@ -60,10 +59,6 @@ release: $(RABBITMQ) clean-release-dir
 	sed 's/%%VSN%%/$(VERSION)/' pre-release/templates/rabbitmq-env > $(RLS_DIR)/sbin/rabbitmq-env
 	sed 's/%%ERTS_VSN%%/erts-$(ERTS_VSN)/' pre-release/templates/rabbitmq-defaults > $(RLS_DIR)/sbin/rabbitmq-defaults
 	chmod +x $(RLS_DIR)/sbin/*
-# copy enabled plugins file
-	mkdir -p $(RLS_DIR)/etc/rabbitmq
-	echo "[$(PLUGINS)]." > $(RLS_DIR)/etc/rabbitmq/enabled_plugins
-	mkdir -p $(RLS_DIR)/plugins/expand
 # generate release files
 	erlc -I $(RLS_DIR)/include/ -o erlang -Wall -v +debug_info -Duse_specs -Duse_proper_qc -pa $(RLS_DIR)/ebin/ erlang/rabbit_release.erl
 	$(MAKE) generate_release
@@ -82,6 +77,7 @@ release: $(RABBITMQ) clean-release-dir
 	chmod +x  $(RLS_DIR)/bin/*
 # add minimal boot file
 	cp $(ERTS_ROOT_DIR)/bin/start_clean.boot $(RLS_DIR)/releases/$(VERSION)
+	cp $(ERTS_ROOT_DIR)/bin/start_sasl.boot $(RLS_DIR)/releases/$(VERSION)
 # add README file
 	cp pre-release/templates/README $(RLS_DIR)/README
 # add LICENSE files
@@ -94,6 +90,8 @@ release: $(RABBITMQ) clean-release-dir
 	mkdir -p $(RLS_DIR)/var/lib/rabbitmq/mnesia
 # generate final tar
 	(cd $(RLS_BUILD_DIR); tar -zchf $(TARBALL_NAME)u.tar.gz $(TARBALL_NAME))
+	mkdir build
+	cp $(RLS_BUILD_DIR)/$(TARBALL_NAME)u.tar.gz build
 # clean up
 	rm pre-release/rabbit.tar.gz
-	rm -rf $(RLS_DIR)
+	rm -rf $(RLS_BUILD_DIR)
