@@ -49,7 +49,7 @@ generate_release:
 	    -s rabbit_release \
 	    -extra "$(RABBITMQ_ENABLED_PLUGINS_FILE)" "$(RABBITMQ_PLUGINS_DIR)" "$(RABBITMQ_PLUGINS_EXPAND_DIR)" "$(RABBITMQ_HOME)"
 
-release: $(RABBITMQ) clean-release-dir
+all: $(RABBITMQ) clean-release-dir
 # prepare build directory
 	rm -rf build
 	mkdir -p $(RLS_DIR)
