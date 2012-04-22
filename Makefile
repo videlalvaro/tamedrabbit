@@ -1,3 +1,5 @@
+.DEFAULT_GOAL:=release
+
 ERTS_VSN=$(shell erl -noshell -eval 'io:format("~s", [erlang:system_info(version)]), halt().')
 ERTS_ROOT_DIR=$(shell erl -noshell -eval 'io:format("~s", [code:root_dir()]), halt().')
 
@@ -49,7 +51,7 @@ generate_release:
 	    -s rabbit_release \
 	    -extra "$(RABBITMQ_ENABLED_PLUGINS_FILE)" "$(RABBITMQ_PLUGINS_DIR)" "$(RABBITMQ_PLUGINS_EXPAND_DIR)" "$(RABBITMQ_HOME)"
 
-all: $(RABBITMQ) clean-release-dir
+release: $(RABBITMQ) clean-release-dir
 # prepare build directory
 	rm -rf build
 	mkdir -p $(RLS_DIR)
