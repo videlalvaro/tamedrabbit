@@ -31,18 +31,18 @@ Before trying this make sure you have installed the required tools listed
 This requires `curl` installed.
 
     $ git clone git://github.com/videlalvaro/tamedrabbit.git
-    $ cd tammedrabbit
+    $ cd tamedrabbit
     $ make release VERSION=2.8.1
 
 Your new release file will be inside:
 
-`tammedrabbit/pre-release/build/rabbitmq-server-<VERSION>u.tar.gz`
+`tamedrabbit/pre-release/build/rabbitmq-server-<VERSION>u.tar.gz`
 
 Note that we add an 'u' to the VERSION number to note that this release is _unofficial_.
 
 Note that `VERSION` must be one of the RabbitMQ official releases. One of the make targets will attempt to fetch RabbitMQ' source code from here: [http://www.rabbitmq.com/releases/rabbitmq-server/](http://www.rabbitmq.com/releases/rabbitmq-server/) based on the version number you provide.
 
-You can customize the enabled plugins by providing the varialbe `PLUGINS` with a comma separated list of plugins. Only officially provided plugins are supported. For example you could create a release like this:
+You can customize the enabled plugins by providing the variable `PLUGINS` with a comma separated list of plugins. Only officially provided plugins are supported. For example you could create a release like this:
 
     $ make release VERSION=2.8.1 PLUGINS="rabbitmq_management,rabbitmq_shovel"
 
