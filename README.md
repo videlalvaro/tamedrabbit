@@ -14,6 +14,8 @@ The release has been built with `Erlang R15B01 (erts-5.9.1)` on a Mac with **OSX
 
 Read the instructions located in the realted README file to see how to run the server.
 
+Part of the work on this project has been sponsored by [Liip AG](http://www.liip.ch/en).
+
 ## Idea ##
 
 The idea of generating that relase is to provide an easy to use RabbitMQ distribution that can
