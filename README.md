@@ -2,7 +2,7 @@
 
 In this repo you can find RabbitMQ packaged as a Mac OSX app that looks like this:
 
-![RabbitMQ.app](https://github.com/videlalvaro/rabbitmq-release/raw/master/images/rabbit_app.png)
+![RabbitMQ.app](https://github.com/videlalvaro/tamedrabbit/raw/master/images/rabbit_app.png)
 
 You can download the app here [http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg](http://dl.dropbox.com/u/58659506/RabbitMQ-2.8.1u.dmg).
 
